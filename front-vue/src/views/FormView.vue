@@ -4,7 +4,7 @@
 
     <!-- Sección de búsqueda mejorada con autocompletado -->
     <div class="row g-3 mb-4">
-      <div class="col-md-6">
+      <div class="col-md-12">
         <label class="form-label">Buscar Establecimiento</label>
         <autocomplete :search="searchIpress" placeholder="Escribe nombre o código..."
           aria-label="Buscar establecimiento" @submit="selectIpress">
@@ -26,7 +26,8 @@
   <div class="card-body">
     <h5>{{ selectedIpress.nombre }} ({{ selectedIpress.codigo }})</h5>
     <div class="row">
-      <div class="col-md-3"><strong>Departamento:</strong> {{ selectedIpress.departamento }}</div>
+      <div class="col-md-1"><strong>Categoria:</strong> {{ selectedIpress.categoria }}</div>
+      <div class="col-md-2"><strong>Departamento:</strong> {{ selectedIpress.departamento }}</div>
       <div class="col-md-3"><strong>Provincia:</strong> {{ selectedIpress.provincia }}</div>
       <div class="col-md-3"><strong>Distrito:</strong> {{ selectedIpress.distrito }}</div>
       <div class="col-md-3"><strong>DISA:</strong> {{ selectedIpress.disa }}</div>
@@ -34,15 +35,11 @@
     
     <!-- Campos adicionales requeridos -->
     <div class="row mt-3">
-      <div class="col-md-4">
-        <label class="form-label">Categoría *</label>
-        <input type="text" class="form-control" v-model="selectedIpress.categoria" required>
-      </div>
-      <div class="col-md-4">
+      <div class="col-md-6">
         <label class="form-label">Responsable</label>
         <input type="text" class="form-control" v-model="selectedIpress.responsable">
       </div>
-      <div class="col-md-4">
+      <div class="col-md-6">
         <label class="form-label">Monitor</label>
         <input type="text" class="form-control" v-model="selectedIpress.monitor">
       </div>
@@ -230,7 +227,7 @@ const selectIpress = (result) => {
     // Campos requeridos del modelo Ipress
     nombre: result.NOMBRE || null,
     codigo: result.COD_IPRESS || null,
-    categoria: null, // Campo requerido pero no viene de SUSALUD
+    categoria: result.CATEGORIA || null,
     departamento: result.DEPARTAMENTO || null,
     provincia: result.PROVINCIA || null,
     disa: result.DISA || null,

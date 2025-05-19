@@ -71,7 +71,10 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
-import { Chart } from 'chart.js';
+import { Chart, registerables } from 'chart.js';
+
+
+Chart.register(...registerables);
 
 // Configuración de Axios
 const api = axios.create({
@@ -172,28 +175,40 @@ const getProgressBarClass = (porcentaje) => {
 };
 
 // Inicializar gráfico
-// Inicializar gráfico
 const initChart = () => {
+  if (!chartCanvas.value) return;
+  
+  // Destroy previous chart instance if it exists
   if (chartInstance) {
     chartInstance.destroy();
+    chartInstance = null;
   }
-  
+
   const ctx = chartCanvas.value.getContext('2d');
+  if (!ctx) {
+    console.warn("No se pudo obtener el contexto del canvas.");
+    return;
+  }
+
   const data = {
     labels: categoriasConPuntaje.value.map(c => c.descripcion),
     datasets: [{
       label: 'Porcentaje de cumplimiento',
       data: categoriasConPuntaje.value.map(c => c.porcentaje),
       backgroundColor: categoriasConPuntaje.value.map(c => 
-        getBackgroundColor(c.porcentaje)) // Aquí faltaba el paréntesis de cierre
+        getBackgroundColor(c.porcentaje)),
+      borderColor: categoriasConPuntaje.value.map(c => 
+        getBorderColor(c.porcentaje)),
+      borderWidth: 1
     }]
   };
-  
+
   chartInstance = new Chart(ctx, {
     type: 'bar',
-    data: data,
+    data,
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       scales: {
         y: {
           beginAtZero: true,
@@ -202,23 +217,36 @@ const initChart = () => {
             display: true,
             text: 'Porcentaje (%)'
           }
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'Categorías'
+          }
         }
       },
       plugins: {
+        legend: {
+          display: false
+        },
         tooltip: {
           callbacks: {
             label: function(context) {
-              const cat = categoriasConPuntaje.value[context.dataIndex];
-              return [
-                `Puntaje: ${cat.puntajeTotal.toFixed(2)}/${cat.puntajeMaximo}`,
-                `Preguntas: ${cat.preguntasConRespuesta}/${cat.totalPreguntas}`
-              ];
+              return `${context.dataset.label}: ${context.raw.toFixed(1)}%`;
             }
           }
         }
       }
     }
   });
+};
+
+// Add border color function
+const getBorderColor = (porcentaje) => {
+  if (porcentaje >= 75) return 'rgba(40, 167, 69, 1)';
+  if (porcentaje >= 50) return 'rgba(23, 162, 184, 1)';
+  if (porcentaje >= 25) return 'rgba(255, 193, 7, 1)';
+  return 'rgba(220, 53, 69, 1)';
 };
 
 // Colores para el gráfico
@@ -230,11 +258,15 @@ const getBackgroundColor = (porcentaje) => {
 };
 
 // Observar cambios para actualizar gráfico
-watch(categoriasConPuntaje, () => {
-  if (chartCanvas.value) {
-    initChart();
+watch(categoriasConPuntaje, (newVal) => {
+  console.log("Watcher disparado. Nuevos datos:", newVal);
+  if (!newVal.length || !chartCanvas.value) {
+    console.warn("No hay datos o el canvas no está disponible");
+    return;
   }
+  initChart();
 }, { deep: true });
+
 
 // Ciclo de vida
 onMounted(async () => {

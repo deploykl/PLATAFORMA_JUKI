@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
     
 class Ipress(models.Model):
     nombre = models.CharField(max_length=150, verbose_name="Nombre del registro")
-    codigo = models.CharField(max_length=50, unique=True, verbose_name="Código único")
+    codigo = models.CharField(max_length=50, verbose_name="Código único")
     categoria = models.CharField(max_length=100, verbose_name="Categoría")
     departamento = models.CharField(max_length=50, verbose_name="Departamento")
     provincia = models.CharField(max_length=50, verbose_name="Provincia")
